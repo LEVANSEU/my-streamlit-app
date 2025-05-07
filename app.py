@@ -20,3 +20,10 @@ if uploaded_report and uploaded_statement:
         st.success("✅ Final file generated!")
 else:
     st.info("Please upload both Excel files.")
+with open("საბოლოო_ფაილი.xlsx", "rb") as file:
+    btn = st.download_button(
+        label="⬇ Download Final File",
+        data=file,
+        file_name="საბოლოო_ფაილი.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
