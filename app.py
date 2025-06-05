@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import io
@@ -64,6 +63,7 @@ if report_file and statement_file:
 
     ws7 = wb.create_sheet(title="კომპანიების_ჯამები")
     ws7.append(['დასახელება', 'საიდენტიფიკაციო კოდი', 'ანგარიშფაქტურების ჯამი', 'ჩარიცხული თანხა'])
+    company_summaries = []  # სტრიმლიტისთვის ინფოს შესაგროვებლად
     for row in range(2, ws1.max_row + 1):
         company_name = ws1[f"A{row}"].value
         company_id = ws1[f"B{row}"].value
@@ -71,10 +71,25 @@ if report_file and statement_file:
         if company_name and company_id:
             payment_formula = f"=SUMIF(საბანკოამონაწერი!P:P, B{row}, საბანკოამონაწერი!D:D)"
             ws7.append([company_name, company_id, invoice_sum, payment_formula])
+            company_summaries.append((company_name, company_id, invoice_sum))  # სია სტრიმლიტისთვის
 
     output = io.BytesIO()
     wb.save(output)
     output.seek(0)
+
+    # 🎯 აქ ვამატებთ ღილაკებიან ინტერფეისს Streamlit-ში
+    st.subheader("📋 კომპანიების ჩამონათვალი")
+    for name, company_id, invoice_sum in company_summaries:
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button(f"{name}", key=f"name_{company_id}"):
+                st.session_state['selected_company'] = name
+        with col2:
+            if st.button(f"{company_id}", key=f"id_{company_id}"):
+                st.session_state['selected_company'] = company_id
+
+    if 'selected_company' in st.session_state:
+        st.info(f"🔎 არჩეული კომპანია: **{st.session_state['selected_company']}**")
 
     st.success("✅ ფაილი მზადაა! ჩამოტვირთე აქედან:")
     st.download_button(
